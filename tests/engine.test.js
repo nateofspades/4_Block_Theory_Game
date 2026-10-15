@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { TetrisEngine, PIECES, SevenBag, SHAPES, scoreForClear, levelSpeed } from '../src/engine.js';
+import { TetrisEngine, PIECES, SevenBag, SHAPES, COLS, ROWS, scoreForClear, levelSpeed } from '../src/engine.js';
 
 const empty = () => Array.from({ length: 20 }, () => Array(10).fill(null));
 const engine = (opts = {}) => new TetrisEngine({ random: () => 0, storage: null, ...opts });
@@ -34,6 +34,13 @@ describe('seven bag', () => {
 });
 
 describe('movement and collision', () => {
+  it('uses a ten-column by twenty-row collision board', () => {
+    const g = engine();
+    expect([COLS, ROWS]).toEqual([10, 20]);
+    expect(g.board).toHaveLength(ROWS);
+    expect(g.board.every(row => row.length === COLS)).toBe(true);
+  });
+
   it('moves left/right inside the board and rejects walls', () => {
     const g = engine(); g.start();
     expect(g.move(-1, 0)).toBe(true); expect(g.active.x).toBe(2);
@@ -75,6 +82,12 @@ describe('SRS rotation and kicks', () => {
     g.board[3][4]=g.board[3][5]=g.board[3][6]=g.board[4][5]=null;
     expect(g.rotate(1)).toBe(false); expect(g.active.rotation).toBe(0);
   });
+  it.each(PIECES.filter(type => type !== 'O'))('keeps a near-bottom %s rotation inside row twenty', type => {
+    const g = engine(); g.start();
+    g.active = { type, rotation: 0, x: 3, y: 17 };
+    expect(g.rotate(1)).toBe(true);
+    expect(Math.max(...g.cells().map(([, y]) => y))).toBeLessThan(ROWS);
+  });
 });
 
 describe('locking and line clears', () => {
@@ -108,6 +121,19 @@ describe('drop, ghost, hold, and lifecycle', () => {
   it('hard drops, scores two per row, and spawns the next piece', () => {
     const g=engine(); g.start(); const first=g.active.type; const distance=g.ghostY()-g.active.y;
     expect(g.hardDrop()).toBe(distance); expect(g.score).toBe(distance*2); expect(g.active.type).not.toBe(first);
+  });
+  it.each(PIECES)('hard drops %s to the physical bottom row on an empty board', type => {
+    const g = engine(); g.state = 'playing'; g.active = { type, rotation: 0, x: 3, y: -1 };
+    const landingY = g.ghostY();
+    const landingCells = g.cells({ ...g.active, y: landingY });
+    expect(Math.max(...landingCells.map(([, y]) => y))).toBe(ROWS - 1);
+    g.hardDrop();
+    expect(g.board[ROWS - 1].some(Boolean)).toBe(true);
+  });
+  it('soft drop locks a piece only after it reaches the bottom row', () => {
+    const g = engine(); g.state = 'playing'; g.active = { type: 'O', rotation: 0, x: 3, y: 18 };
+    expect(g.softDrop()).toBe(false);
+    expect(g.board[ROWS - 1].filter(Boolean)).toHaveLength(2);
   });
   it('allows hold once per drop and resets after lock', () => {
     const g=engine(); g.start(); const first=g.active.type;
