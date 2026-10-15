@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#070b18">
+  <meta name="description" content="A polished, responsive canvas Tetris game.">
+  <title>Tetris</title>
+  <link rel="stylesheet" href="./src/style.css">
+</head>
+<body>
+  <main class="app" data-state="idle">
+    <header><h1><span>T</span>ETRIS</h1><div class="header-actions"><button id="grid-toggle" aria-pressed="true">Grid</button><button id="sound-toggle" aria-pressed="true">Sound</button></div></header>
+    <section class="game-layout">
+      <aside class="panel stats" aria-label="Game statistics">
+        <div><small>Score</small><strong id="score">0</strong></div>
+        <div><small>High</small><strong id="high-score">0</strong></div>
+        <div><small>Lines</small><strong id="lines">0</strong></div>
+        <div><small>Level</small><strong id="level">1</strong></div>
+      </aside>
+      <div class="board-column">
+        <div class="board-wrap">
+          <canvas id="board" width="300" height="600" aria-label="Tetris game board"></canvas>
+          <div class="overlay" id="overlay">
+            <div class="overlay-card"><h2 id="state-title">Ready?</h2><p id="state-copy">Stack blocks. Clear lines.</p><button id="primary" aria-label="Start game">Start</button></div>
+          </div>
+        </div>
+        <div class="touch-controls" aria-label="Game controls">
+          <button data-action="left" aria-label="Move left">◀</button>
+          <button data-action="right" aria-label="Move right">▶</button>
+          <button data-action="rotate" aria-label="Rotate">↻</button>
+          <button data-action="soft" aria-label="Soft drop">▼</button>
+          <button data-action="hard" aria-label="Hard drop">⤓</button>
+          <button data-action="hold" aria-label="Hold">H</button>
+          <button data-action="pause" aria-label="Pause game">Ⅱ</button>
+        </div>
+      </div>
+      <aside class="panel previews">
+        <div class="preview"><small>Next</small><canvas id="next" width="100" height="80" aria-label="Next piece"></canvas></div>
+        <div class="preview"><small>Hold</small><canvas id="hold" width="100" height="80" aria-label="Held piece"></canvas></div>
+        <button id="restart" aria-label="Restart game">Restart</button>
+        <p class="keys">← → Move<br>↑ Rotate · ↓ Soft<br>Space Hard · C Hold<br>P Pause</p>
+      </aside>
+    </section>
+  </main>
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>
