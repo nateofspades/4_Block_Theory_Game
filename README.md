@@ -1,6 +1,6 @@
 # Tetris
 
-**[Play Tetris live](https://nateofspades.github.io/tetris_game/)**
+**Play now: https://nateofspades.github.io/tetris_game/**
 
 ![Tetris gameplay](assets/screenshots/gameplay.png)
 
