@@ -40,7 +40,13 @@ class FakeAudioContext {
   }
 }
 
-const makeController = ({ stored, hidden = false } = {}) => {
+const deferred = () => {
+  let resolve;
+  const promise = new Promise(done => { resolve = done; });
+  return { promise, resolve };
+};
+
+const makeController = ({ stored, hidden = false, createContext } = {}) => {
   const contexts = [];
   const documentRef = { hidden };
   const controller = new MusicController({
@@ -48,7 +54,7 @@ const makeController = ({ stored, hidden = false } = {}) => {
     documentRef,
     renderSamples: () => new Float32Array(128),
     createContext: () => {
-      const context = new FakeAudioContext();
+      const context = createContext?.() ?? new FakeAudioContext();
       contexts.push(context);
       return context;
     },
@@ -133,6 +139,35 @@ describe('music lifecycle', () => {
     contexts[0].state = 'interrupted';
     await controller.handleAudioStateChange();
     expect(contexts[0].resume).toHaveBeenCalledTimes(3);
+  });
+
+  it.each(['off', 'hidden'])('keeps audio suspended when %s wins a pending resume race', async policy => {
+    const resumeGate = deferred();
+    const { controller, contexts, documentRef } = makeController({
+      createContext: () => {
+        const context = new FakeAudioContext();
+        context.resume = vi.fn(async () => {
+          await resumeGate.promise;
+          context.state = 'running';
+        });
+        return context;
+      },
+    });
+
+    const pendingResume = controller.handleInteraction();
+    expect(contexts[0].resume).toHaveBeenCalledTimes(1);
+
+    let pendingPolicy;
+    if (policy === 'off') {
+      pendingPolicy = controller.setEnabled(false);
+    } else {
+      documentRef.hidden = true;
+      pendingPolicy = controller.handleVisibilityChange();
+    }
+    resumeGate.resolve();
+    await Promise.all([pendingResume, pendingPolicy]);
+
+    expect(contexts[0].state).toBe('suspended');
   });
 
   it('rebuilds a closed mobile audio context at the previous loop position', async () => {

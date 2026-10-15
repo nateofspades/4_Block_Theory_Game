@@ -133,6 +133,10 @@ export class MusicController {
     if (!this.ensureGraph()) return false;
     try {
       if (this.context.state !== 'running') await this.context.resume();
+      if (!this.enabled || this.documentRef?.hidden) {
+        await this.suspend();
+        return false;
+      }
       return true;
     } catch { return false; }
   }

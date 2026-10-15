@@ -48,6 +48,17 @@ for (const viewport of touchSizes) test(`touch controls perform actions at ${vie
   await page.getByRole('button',{name:'Hard drop'}).click(); expect(await page.evaluate(()=>window.__tetris.score)).toBeGreaterThan(1);
 });
 
+test('music toggle stays visible and usable at 844x390', async ({page}) => {
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.goto('/?seed=8');
+
+  const musicToggle = page.getByRole('button', { name: 'Music On' });
+  await expect(musicToggle).toBeVisible();
+  await musicToggle.click();
+  await expect(page.getByRole('button', { name: 'Music Off' })).toHaveAttribute('aria-pressed', 'false');
+  expect(await page.evaluate(() => localStorage.getItem('tetris-music'))).toBe('off');
+});
+
 test('visibility change pauses an active game', async ({page}) => {
   await page.goto('/?seed=2'); await page.getByRole('button',{name:'Start game', exact:true}).click();
   await page.evaluate(()=>{
