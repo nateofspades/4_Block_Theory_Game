@@ -28,17 +28,17 @@
         <div class="touch-controls" aria-label="Game controls">
           <button data-action="left" aria-label="Move left">◀</button>
           <button data-action="right" aria-label="Move right">▶</button>
-          <button data-action="rotate" aria-label="Rotate">↻</button>
           <button data-action="soft" aria-label="Soft drop">▼</button>
-          <button data-action="hard" aria-label="Hard drop">⤓</button>
+          <button data-action="rotate" aria-label="Rotate">↻</button>
           <button data-action="hold" aria-label="Hold">H</button>
-          <button data-action="pause" aria-label="Pause game">Ⅱ</button>
+          <button data-action="hard" aria-label="Hard drop">⤓</button>
         </div>
       </div>
       <aside class="panel previews">
         <div class="preview"><small>Next</small><canvas id="next" width="100" height="80" aria-label="Next piece"></canvas></div>
         <div class="preview"><small>Hold</small><canvas id="hold" width="100" height="80" aria-label="Held piece"></canvas></div>
         <button id="restart" aria-label="Restart game">Restart</button>
+        <button id="pause-control" data-action="pause" aria-label="Pause game">Pause</button>
         <p class="keys">← → Move<br>↑ Rotate · ↓ Soft<br>Space Hard · C Hold<br>P Pause</p>
       </aside>
     </section>

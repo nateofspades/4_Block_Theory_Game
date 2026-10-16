@@ -76,6 +76,7 @@ export class MusicController {
     this.onChange = onChange;
     this.enabled = this.readPreference();
     this.activated = false;
+    this.gamePaused = false;
     this.context = null;
     this.source = null;
     this.gain = null;
@@ -130,11 +131,11 @@ export class MusicController {
   }
 
   async resume() {
-    if (!this.enabled || !this.activated || this.documentRef?.hidden) return false;
+    if (!this.enabled || !this.activated || this.gamePaused || this.documentRef?.hidden) return false;
     if (!this.ensureGraph()) return false;
     try {
       if (this.context.state !== 'running') await this.context.resume();
-      if (!this.enabled || this.documentRef?.hidden) {
+      if (!this.enabled || this.gamePaused || this.documentRef?.hidden) {
         await this.suspend();
         return false;
       }
@@ -163,6 +164,15 @@ export class MusicController {
 
   toggle() { return this.setEnabled(!this.enabled); }
 
+  async setGamePaused(paused) {
+    this.gamePaused = Boolean(paused);
+    if (this.gamePaused) {
+      await this.suspend();
+      return false;
+    }
+    return this.resume();
+  }
+
   async handleVisibilityChange() {
     if (this.documentRef?.hidden) return this.suspend();
     return this.resume();
@@ -179,7 +189,7 @@ export class MusicController {
       this._rebuilding = false;
       return this.resume();
     }
-    if (this.context.state === 'interrupted' && this.enabled && !this.documentRef?.hidden) {
+    if (this.context.state === 'interrupted' && this.enabled && !this.gamePaused && !this.documentRef?.hidden) {
       return this.resume();
     }
     return false;

@@ -142,6 +142,23 @@ describe('music lifecycle', () => {
     expect(contexts[0].state).toBe('running');
   });
 
+  it('suspends for a paused game and resumes the same source only with play', async () => {
+    const { controller, contexts } = makeController();
+    await controller.handleInteraction();
+    contexts[0].currentTime = 2.75;
+    const source = controller.source;
+    const position = controller.position;
+
+    await controller.setGamePaused(true);
+    expect(contexts[0].state).toBe('suspended');
+    expect(controller.position).toBeCloseTo(position, 5);
+
+    await controller.setGamePaused(false);
+    expect(contexts[0].state).toBe('running');
+    expect(controller.source).toBe(source);
+    expect(controller.position).toBeCloseTo(position, 5);
+  });
+
   it('suspends while hidden and resumes after visibility or interruption', async () => {
     const { controller, contexts, documentRef } = makeController();
     await controller.handleInteraction();
@@ -157,7 +174,7 @@ describe('music lifecycle', () => {
     expect(contexts[0].resume).toHaveBeenCalledTimes(3);
   });
 
-  it.each(['off', 'hidden'])('keeps audio suspended when %s wins a pending resume race', async policy => {
+  it.each(['off', 'hidden', 'paused'])('keeps audio suspended when %s wins a pending resume race', async policy => {
     const resumeGate = deferred();
     const { controller, contexts, documentRef } = makeController({
       createContext: () => {
@@ -176,9 +193,11 @@ describe('music lifecycle', () => {
     let pendingPolicy;
     if (policy === 'off') {
       pendingPolicy = controller.setEnabled(false);
-    } else {
+    } else if (policy === 'hidden') {
       documentRef.hidden = true;
       pendingPolicy = controller.handleVisibilityChange();
+    } else {
+      pendingPolicy = controller.setGamePaused(true);
     }
     resumeGate.resolve();
     await Promise.all([pendingResume, pendingPolicy]);

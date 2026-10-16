@@ -114,6 +114,7 @@ function drawPreview(canvas, type) {
 
 function sync() {
   $('.app').dataset.state = game.state;
+  void music.setGamePaused(game.state === 'paused');
   $('#score').textContent = game.score.toLocaleString();
   $('#high-score').textContent = game.highScore.toLocaleString();
   $('#lines').textContent = game.lines;
@@ -174,6 +175,7 @@ for (const eventName of ['pointerdown', 'touchstart', 'keydown']) {
 }
 
 $('#primary').addEventListener('click', () => {
+  void music.handleInteraction();
   if (game.state === 'idle') game.start();
   else if (game.state === 'paused') game.resume();
   else game.restart();
