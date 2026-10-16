@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  MASTER_MUSIC_VOLUME,
   MUSIC_PREFERENCE_KEY,
   MusicController,
   TRACK_DURATION_SECONDS,
@@ -74,6 +75,21 @@ describe('original programmatic chiptune', () => {
 
 describe('music lifecycle', () => {
   beforeEach(() => vi.restoreAllMocks());
+
+  it('uses the target master volume when created and after toggle resume', async () => {
+    const { controller, contexts } = makeController();
+
+    await controller.handleInteraction();
+    expect(controller.gain.gain.value).toBe(0.28);
+    expect(MASTER_MUSIC_VOLUME).toBe(0.28);
+
+    await controller.setEnabled(false);
+    await controller.setEnabled(true);
+
+    expect(contexts).toHaveLength(1);
+    expect(controller.gain.gain.value).toBe(MASTER_MUSIC_VOLUME);
+    expect(contexts[0].state).toBe('running');
+  });
 
   it('waits for first interaction and creates only one looping source', async () => {
     const { controller, contexts } = makeController();

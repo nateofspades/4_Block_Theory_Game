@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { MASTER_MUSIC_VOLUME } from '../src/music.js';
 
 const sizes = [
   {width:1920,height:1080}, {width:1366,height:768}, {width:768,height:1024},
@@ -83,6 +84,7 @@ test('music starts once after interaction and keeps its source through restart a
 
   await page.getByRole('button', { name: 'Start game', exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.__tetrisMusic.context?.state)).toBe('running');
+  expect(await page.evaluate(() => window.__tetrisMusic.gain?.gain.value)).toBeCloseTo(MASTER_MUSIC_VOLUME, 5);
   const sourceIsStable = await page.evaluate(() => {
     window.__musicSource = window.__tetrisMusic.source;
     return Boolean(window.__musicSource?.loop);
@@ -94,6 +96,7 @@ test('music starts once after interaction and keeps its source through restart a
   await page.getByRole('button', { name: 'Restart game' }).click();
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => window.__tetrisMusic.source === window.__musicSource)).toBe(true);
+  expect(await page.evaluate(() => window.__tetrisMusic.gain?.gain.value)).toBeCloseTo(MASTER_MUSIC_VOLUME, 5);
   expect(await page.evaluate(() => window.__tetrisMusic.position)).toBeGreaterThanOrEqual(positionBefore);
 
   await page.evaluate(() => {
@@ -109,6 +112,7 @@ test('music starts once after interaction and keeps its source through restart a
   expect(await page.evaluate(() => localStorage.getItem('tetris-music'))).toBe('off');
   await page.getByRole('button', { name: 'Music Off' }).click();
   expect(await page.evaluate(() => window.__tetrisMusic.source === window.__musicSource)).toBe(true);
+  expect(await page.evaluate(() => window.__tetrisMusic.gain?.gain.value)).toBeCloseTo(MASTER_MUSIC_VOLUME, 5);
 });
 
 test('stored Music Off preference survives reload until explicitly enabled', async ({page}) => {

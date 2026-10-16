@@ -1,5 +1,6 @@
 export const MUSIC_PREFERENCE_KEY = 'tetris-music';
 export const TRACK_DURATION_SECONDS = 12.8;
+export const MASTER_MUSIC_VOLUME = 0.28;
 
 const STEP_SECONDS = 0.1; // 150 BPM, sixteenth-note pulse.
 const MELODY = [
@@ -107,7 +108,7 @@ export class MusicController {
       buffer.getChannelData(0).set(samples);
       const source = context.createBufferSource();
       const gain = context.createGain();
-      gain.gain.value = 0.18;
+      gain.gain.value = MASTER_MUSIC_VOLUME;
       source.buffer = buffer;
       source.loop = true;
       source.connect(gain);
