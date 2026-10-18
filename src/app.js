@@ -1,8 +1,9 @@
 import { TetrisEngine, SHAPES, COLS, ROWS, levelSpeed } from './engine.js';
-import { boardGeometry, cellRect } from './rendering.js';
+import { boardGeometry, cellRect, tileContour } from './rendering.js';
 import { MusicController } from './music.js';
 
-const COLORS = { I:'#29dbe5', J:'#4777ff', L:'#ff9d2e', O:'#f7d744', S:'#53d769', T:'#b667f1', Z:'#f24f62' };
+// Color communicates material/state, never the seven-piece identity.
+const MATERIAL = { fired: '#e1c8a1', moving: '#d77855', guide: '#bcae94' };
 const $ = selector => document.querySelector(selector);
 
 function seeded(seed) {
@@ -50,12 +51,26 @@ function fit(canvas) {
 
 function drawCell(context, x, y, geometry, color, alpha = 1) {
   const rect = cellRect(x, y, geometry);
-  context.globalAlpha = alpha;
-  context.fillStyle = color;
-  context.fillRect(rect.x + 1, rect.y + 1, rect.width - 2, rect.height - 2);
-  context.fillStyle = '#fff3';
-  context.fillRect(rect.x + 2, rect.y + 2, rect.width - 4, 2);
-  context.globalAlpha = 1;
+  const points = tileContour(rect);
+  context.beginPath();
+  points.forEach(([px, py], i) => i ? context.lineTo(px, py) : context.moveTo(px, py));
+  context.closePath();
+  context.lineWidth = Math.max(0.7, geometry.cellSize * 0.035);
+  if (alpha < 1) {
+    context.strokeStyle = color;
+    context.setLineDash([geometry.cellSize * .12, geometry.cellSize * .1]);
+    context.stroke(); context.setLineDash([]);
+    return;
+  }
+  context.fillStyle = color; context.fill();
+  context.strokeStyle = "#302f2a"; context.stroke();
+  // A stamped spindle, not a glossy square highlight. The same material is
+  // used by every shape and both instrument previews.
+  const cx=rect.x+rect.width/2, cy=rect.y+rect.height/2, r=rect.width*.16;
+  context.beginPath(); context.moveTo(cx,cy-r); context.lineTo(cx+r,cy);
+  context.lineTo(cx,cy+r); context.lineTo(cx-r,cy); context.closePath();
+  context.strokeStyle="#594e3c"; context.stroke();
+
 }
 
 function drawBoard() {
@@ -63,34 +78,29 @@ function drawBoard() {
   const geometry = boardGeometry(width, height);
   window.__boardGeometry = geometry;
   context.clearRect(0, 0, width, height);
-  context.fillStyle = '#080d1c';
+  context.fillStyle = '#292e2c';
   context.fillRect(geometry.offsetX, geometry.offsetY, geometry.width, geometry.height);
   if (showGrid) {
-    context.strokeStyle = '#92a6ce12';
-    context.lineWidth = 1;
-    for (let x = 1; x < COLS; x += 1) {
-      context.beginPath();
-      context.moveTo(geometry.offsetX + x * geometry.cellSize, geometry.offsetY);
-      context.lineTo(geometry.offsetX + x * geometry.cellSize, geometry.offsetY + geometry.height);
-      context.stroke();
-    }
+    // Registration points on a fabrication bed, not a luminous square cage.
+    context.fillStyle = "#d8cdb033";
+    const dot = Math.max(0.8, geometry.cellSize * .045);
     for (let y = 1; y < ROWS; y += 1) {
-      context.beginPath();
-      context.moveTo(geometry.offsetX, geometry.offsetY + y * geometry.cellSize);
-      context.lineTo(geometry.offsetX + geometry.width, geometry.offsetY + y * geometry.cellSize);
-      context.stroke();
+      for (let x = 1; x < COLS; x += 1) {
+        context.fillRect(geometry.offsetX + x * geometry.cellSize - dot / 2,
+          geometry.offsetY + y * geometry.cellSize - dot / 2, dot, dot);
+      }
     }
   }
   game.board.forEach((row, y) => row.forEach((value, x) => {
-    if (value) drawCell(context, x, y, geometry, COLORS[value]);
+    if (value) drawCell(context, x, y, geometry, MATERIAL.fired);
   }));
   if (!game.active) return;
   const ghostY = game.ghostY();
   for (const [dx, dy] of SHAPES[game.active.type][game.active.rotation]) {
-    if (ghostY + dy >= 0) drawCell(context, game.active.x + dx, ghostY + dy, geometry, COLORS[game.active.type], 0.2);
+    if (ghostY + dy >= 0) drawCell(context, game.active.x + dx, ghostY + dy, geometry, MATERIAL.guide, 0.2);
   }
   for (const [dx, dy] of SHAPES[game.active.type][game.active.rotation]) {
-    if (game.active.y + dy >= 0) drawCell(context, game.active.x + dx, game.active.y + dy, geometry, COLORS[game.active.type]);
+    if (game.active.y + dy >= 0) drawCell(context, game.active.x + dx, game.active.y + dy, geometry, MATERIAL.moving);
   }
 }
 
@@ -107,8 +117,7 @@ function drawPreview(canvas, type) {
   const offsetX = (width - (maxX - minX + 1) * size) / 2 - minX * size;
   const offsetY = (height - (maxY - minY + 1) * size) / 2 - minY * size;
   for (const [x, y] of points) {
-    context.fillStyle = COLORS[type];
-    context.fillRect(offsetX + x * size + 1, offsetY + y * size + 1, size - 2, size - 2);
+    drawCell(context, x, y, {cellSize:size, offsetX, offsetY}, MATERIAL.moving);
   }
 }
 
@@ -129,7 +138,7 @@ function sync() {
   }
   overlay.classList.remove('hidden');
   const states = {
-    idle: ['Ready?', 'Stack blocks. Clear lines.', 'Start', 'Start game'],
+    idle: ['Load the kiln', 'Fit. Fire. Make room.', 'Start', 'Start game'],
     paused: ['Paused', 'Take a breath.', 'Resume', 'Resume game'],
     gameover: ['Game over', `Score ${game.score.toLocaleString()}`, 'Play again', 'Start game'],
   };

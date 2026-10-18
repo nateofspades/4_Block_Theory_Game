@@ -3,24 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#070b18">
-  <meta name="description" content="A polished, responsive canvas Tetris game.">
-  <title>Tetris</title>
+  <meta name="theme-color" content="#e8dfcf">
+  <meta name="description" content="Private falling-block presentation study. Not approved for public release.">
+  <title>Kiln / 07 — private study</title>
   <link rel="stylesheet" href="./src/style.css">
 </head>
 <body>
   <main class="app" data-state="idle">
-    <header><h1><span>T</span>ETRIS</h1><div class="header-actions"><button id="grid-toggle" aria-pressed="true">Grid</button><button id="music-toggle" aria-pressed="true" aria-label="Music On">Music On</button></div></header>
+    <header><h1>KILN <span>/ 07</span></h1><div class="header-actions"><button id="grid-toggle" aria-pressed="true">Grid</button><button id="music-toggle" aria-pressed="true" aria-label="Music On">Music On</button></div></header>
     <section class="game-layout">
       <aside class="panel stats" aria-label="Game statistics">
         <div><small>Score</small><strong id="score">0</strong></div>
-        <div><small>High</small><strong id="high-score">0</strong></div>
+        <div><small>Record</small><strong id="high-score">0</strong></div>
         <div><small>Lines</small><strong id="lines">0</strong></div>
-        <div><small>Level</small><strong id="level">1</strong></div>
+        <div><small>Cycle</small><strong id="level">1</strong></div>
       </aside>
       <div class="board-column">
         <div class="board-wrap">
-          <canvas id="board" width="300" height="600" aria-label="Tetris game board"></canvas>
+          <canvas id="board" width="300" height="600" aria-label="Falling-block game board"></canvas>
           <div class="overlay" id="overlay">
             <div class="overlay-card"><h2 id="state-title">Ready?</h2><p id="state-copy">Stack blocks. Clear lines.</p><button id="primary" aria-label="Start game">Start</button></div>
           </div>
@@ -35,8 +35,8 @@
         </div>
       </div>
       <aside class="panel previews">
-        <div class="preview"><small>Next</small><canvas id="next" width="100" height="80" aria-label="Next piece"></canvas></div>
-        <div class="preview"><small>Hold</small><canvas id="hold" width="100" height="80" aria-label="Held piece"></canvas></div>
+        <div class="preview"><small>Intake</small><canvas id="next" width="100" height="80" aria-label="Next piece"></canvas></div>
+        <div class="preview"><small>Reserve</small><canvas id="hold" width="100" height="80" aria-label="Held piece"></canvas></div>
         <button id="restart" aria-label="Restart game">Restart</button>
         <button id="pause-control" data-action="pause" aria-label="Pause game">Pause</button>
         <p class="keys">← → Move<br>↑ Rotate · ↓ Soft<br>Space Hard · C Hold<br>P Pause</p>
