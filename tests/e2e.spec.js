@@ -229,3 +229,77 @@ test('stored Music Off preference survives reload until explicitly enabled', asy
   await expect.poll(() => page.evaluate(() => window.__tetrisMusic.context?.state)).toBe('running');
   expect(await page.evaluate(() => localStorage.getItem('tetris-music'))).toBe('on');
 });
+
+for (const viewport of sizes) test(`all music toggle corners are usable at ${viewport.width}x${viewport.height}`, async ({page}) => {
+  await page.setViewportSize(viewport); await page.goto("/?seed=7");
+  const bounds = await page.locator("#music-toggle").evaluate(el => {
+    const r = el.getBoundingClientRect();
+    const header=el.closest('header').getBoundingClientRect();
+    const heading=el.closest('header').querySelector('h1').getBoundingClientRect();
+    if (r.right>header.right || r.left<header.left || (r.top<heading.bottom && r.left<heading.right)) return {inside:false,reachable:false};
+    const points = [[r.left+5,r.top+5],[r.right-5,r.top+5],[r.left+5,r.bottom-5],[r.right-5,r.bottom-5]];
+    return { inside: r.left>=0 && r.top>=0 && r.right<=innerWidth && r.bottom<=innerHeight,
+      reachable: points.every(([x,y]) => el.contains(document.elementFromPoint(x,y))) };
+  });
+  expect(bounds).toEqual({inside:true,reachable:true});
+  await page.locator("#music-toggle").click();
+  await expect(page.locator("#music-toggle")).toHaveAttribute("aria-pressed","false");
+});
+
+for (const viewport of sizes) test(`bottom row really locks, renders and clears at ${viewport.width}x${viewport.height}`, async ({page}) => {
+  await page.setViewportSize(viewport); await page.goto("/?seed=7");
+  await page.getByRole("button", {name:"Start game",exact:true}).click();
+  await page.evaluate(() => {
+    const g=window.__tetris;
+    g.board.forEach(r=>r.fill(null));
+    g.active={type:"O",rotation:0,x:3,y:16};
+  });
+  await page.getByRole("button",{name:"Hard drop"}).click();
+  expect(await page.evaluate(()=>window.__tetris.board[19].filter(Boolean).length)).toBe(2);
+  await expect.poll(()=>page.evaluate(()=>{
+    const c=document.querySelector("#board"), g=window.__boardGeometry;
+    const d=c.width/c.getBoundingClientRect().width;
+    const at=x=>Array.from(c.getContext("2d").getImageData(Math.floor((g.offsetX+(x+.5)*g.cellSize)*d),Math.floor((g.offsetY+19.5*g.cellSize)*d),1,1).data).join();
+    return at(4)!==at(0);
+  })).toBe(true);
+  await page.evaluate(()=>{
+    const g=window.__tetris;
+    g.board.forEach(r=>r.fill(null));
+    g.board[19].fill("J"); for(let x=3;x<7;x++)g.board[19][x]=null;
+    g.board[18][0]="O"; g.active={type:"I",rotation:0,x:3,y:16};
+  });
+  await page.getByRole("button",{name:"Hard drop"}).click();
+  expect(await page.evaluate(()=>window.__tetris.lines)).toBe(1);
+  expect(await page.evaluate(()=>window.__tetris.board[19][0])).toBe("O");
+  expect(await page.evaluate(()=>window.__tetris.board[19].filter(Boolean).length)).toBe(1);
+});
+
+test("portrait-landscape-portrait and restart preserve audio source and legacy records", async ({page})=>{
+  await page.addInitScript(()=>{localStorage.setItem("tetris-high-score","4321");localStorage.setItem("tetris-music","on");});
+  await page.setViewportSize({width:390,height:844}); await page.goto("/?seed=3");
+  await expect(page.locator("#high-score")).toHaveText("4,321");
+  await page.getByRole("button",{name:"Start game",exact:true}).click();
+  await expect.poll(()=>page.evaluate(()=>window.__tetrisMusic.context?.state)).toBe("running");
+  await page.evaluate(()=>{window.__savedSource=window.__tetrisMusic.source;window.__savedClock=window.__tetrisMusic.context.currentTime;});
+  for(const size of [{width:844,height:390},{width:568,height:320},{width:320,height:568},{width:390,height:844}]){
+    await page.setViewportSize(size);
+    await expect.poll(()=>page.evaluate(()=>Math.abs(document.querySelector("#board").width/document.querySelector("#board").getBoundingClientRect().width-Math.min(devicePixelRatio,2))<.02)).toBe(true);
+    expect(await page.evaluate(()=>window.__tetrisMusic.source===window.__savedSource)).toBe(true);
+    await page.getByRole("button",{name:"Restart game"}).click();
+    expect(await page.evaluate(()=>window.__tetrisMusic.context.currentTime>=window.__savedClock)).toBe(true);
+    expect(await page.evaluate(()=>window.__tetris.highScore)).toBe(4321);
+  }
+});
+
+test("capture private gameplay evidence across all layout sizes",async({page},testInfo)=>{
+  await page.goto("/?seed=15");
+  await page.getByRole("button",{name:"Start game",exact:true}).click();
+  for(const direction of ["ArrowLeft","ArrowRight","ArrowLeft","ArrowRight"]){
+    await page.keyboard.press(direction); await page.keyboard.press(direction); await page.keyboard.press("ArrowUp"); await page.keyboard.press("Space");
+  }
+  for(const size of sizes){
+    await page.setViewportSize(size);
+    await expect.poll(()=>page.evaluate(()=>Math.abs(document.querySelector("#board").width/document.querySelector("#board").getBoundingClientRect().width-Math.min(devicePixelRatio,2))<.02)).toBe(true);
+    await page.screenshot({path:`${process.env.STACK_EVIDENCE_DIR || testInfo.outputDir}/stack-${size.width}x${size.height}.png`});
+  }
+});
