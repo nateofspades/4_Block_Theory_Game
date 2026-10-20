@@ -1,25 +1,11 @@
-# Private migration preparation — not release approval
+# Migration preparation — historical context
 
-## Identities and status
+The private-preparation hold in commits `35c81db` / `da38dad` was superseded by the repository owner's explicit authorization for the final **4 Block Theory** migration. This document records that decision, not legal clearance. The old private titles Kiln / 07 and proposed Neon Stack repository slug were not adopted as the final public identity.
 
-- Private neutral working title: **Kiln / 07**. This labels a local expressive-presentation study, not a cleared public brand.
-- Coordinator's proposed migration label: **Neon Stack**; proposed repository slug `neonstackgame`.
-- Existing repository / former public path: `tetris_game`. No repository rename, remote edit, push, merge, Pages change, deployment or public URL verification is performed by this preparation.
-- Do not advertise a proposed `https://nateofspades.github.io/neonstackgame/` as working. It is an unverified future destination, contingent on separate approval and deployment.
-- Package remains private. Legacy engine/debug names and storage identifiers intentionally remain internal; they are not public branding.
+Final title: **4 Block Theory**. Existing repository `nateofspades/tetris_game` becomes `nateofspades/4_Block_Theory_Game`; live path: https://nateofspades.github.io/4_Block_Theory_Game/ . Original local checkout `/root/tetris_game` and shared git storage remain; all four private-preparation commits remain in ancestry. No profiles are managed by this repository.
 
-## Proposed metadata, only after release gates
+The ceramic-workshop expressive improvements are retained. `src/engine.js` and `src/music.js` remain byte-identical to original main `842622f6200e3a55847a7cda5699332b86190653`. Legacy debug identifiers and `tetris-high-score` / `tetris-music` storage keys remain deliberately. Same-origin seeded path tests do not prove actual individual user-data migration.
 
-Suggested public title, if separately approved: `Neon Stack`; description: `A falling-block puzzle with a ceramic workshop presentation, keyboard and touch controls.` Name availability/trademark review is still required. Apply an approved title/description in HTML, README, package and lockfile together. Do not perform a blanket replacement in music or compatibility identifiers.
+The [IP audit](IP_AUDIT.md) replaces the provisional source-only assessment. Retained seven-piece / 10×20 / line-clear gameplay remains recognizable. Public availability is not an unrestricted license; no general game-source LICENSE was identified. Owner-directed publication accepts disclosed uncertainty, not a legal opinion. Independent musicological and qualified legal review remain recommended.
 
-Vite uses relative asset URLs (`base: './'`); validate the actual approved hosting path before publication. Check workflow permissions, Pages deployment source, redirects, repository links and shared external links separately. The existing workflow is test-only (read-only contents permission), not a Pages deployment job, and is not proof that a future URL exists.
-
-## Compatibility and preservation
-
-Keep `tetris-high-score` (numeric string) and `tetris-music` (`on` / `off`). localStorage belongs to an origin, not a repository path: a same-origin path rename can retain it, a change of origin does not carry it automatically. The current engine, exact seven shapes/rotations/kicks, 10×20 playable grid, seven-bag, scoring, hold and drops are intentionally unchanged. The full `src/music.js` must stay byte-for-byte identical to baseline `842622f6200e3a55847a7cda5699332b86190653`; retain the musical track's existing title in provenance.
-
-## Unresolved review / public deployment hold
-
-Changing expression is not legal clearance. The recognizable combination of the 10×20 grid, exact seven tetrominoes, rotations/kicks, line clearing, ghost, hold and next still raises unresolved overall-expression concerns in comparison with Tetris, even after the conventional rainbow mapping, square highlighted surfaces, neon scene and flanking HUD are replaced. Qualified comparative review must evaluate the whole interactive presentation, not just isolated rules or screenshots.
-
-The source audit found no general LICENSE for this game. Establish ownership/authorization for source, art and music; existing originality comments are assertions, not grants or verified chain of title. The music has not received independent listening/musicological clearance. No trademark/domain search or legal conclusion is provided. Keep release blocked pending a documented decision on these issues and actual comparison with reference works.
+GitHub Actions now runs full unit/browser checks and deploys the built artifact only after tests pass. External migration evidence records exact commit, review, test counts, immutable repository ID and verified Pages response rather than treating a push alone as deployment.

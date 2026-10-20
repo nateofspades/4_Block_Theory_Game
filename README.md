@@ -1,59 +1,56 @@
-# Kiln / 07 — private working title
+# 4 Block Theory
 
-Existing public build (unchanged older presentation): https://nateofspades.github.io/tetris_game/
+[Play 4 Block Theory](https://nateofspades.github.io/4_Block_Theory_Game/)
 
-![Actual private gameplay of the redesigned falling-block game](assets/screenshots/private-gameplay-desktop.png)
+![4 Block Theory — actual active browser gameplay](assets/screenshots/gameplay.png)
 
-Real Playwright capture of the running local branch, not a mockup or the public deployment. [Small-mobile gameplay capture](assets/screenshots/private-gameplay-mobile.png).
+A falling-block puzzle in a ceramic workshop: matte stamped tiles, a mineral palette, registration dots and an open fabrication gantry. Fit pieces, clear rows and keep the kiln moving. No account, download or external runtime service is required.
 
-A local presentation study of the existing falling-block game, **not a new public release**. The proposed migration name **Neon Stack** is documented in [private migration preparation](docs/private-migration.md); neither that name nor a new public URL is cleared or verified.
+## Play and features
 
-The ceramic-workshop direction replaces the previous neon/rainbow presentation with an open asymmetric gantry, registration-point bed, matte chamfered tiles, a warm mineral palette, production readout rail and intake/reserve instrument panel. These expressive changes do **not** resolve legal questions about the retained gameplay combination. Public deployment remains on hold.
+- Full 10-column, **20-playable-row** arena, seven-piece bag, rotation kicks, ghost landing guide and hold.
+- Soft/hard drops, single through four-line clears, score and accelerating levels; endless play until the stack tops out (no victory endpoint or separate modes).
+- Local high score and music preference; keyboard and thumb-sized mobile controls, portrait and landscape layouts.
+- One continuous instrumental chiptune loop, preserved from the original project; no added sound effects.
 
-## Preserved gameplay
-
-The existing engine retains its 10×20 playable board, exact seven four-cell pieces, seven-bag randomization, SRS-style rotations/kicks, landing guide, hold, soft/hard drops, scoring, levels and local high score. No rules rewrite or recreated game is intended.
-
-| Action | Keyboard | On-screen control |
+| Action | Desktop keyboard | Mobile / on-screen |
 |---|---|---|
 | Move | Left / Right | ◀ / ▶ |
 | Rotate | Up | ↻ |
 | Soft drop | Down | ▼ |
 | Hard drop | Space | ⤓ |
 | Hold | C or Shift | H |
-| Pause / resume | P or Escape | Pause, then Resume overlay |
+| Pause / resume | P or Escape | Pause, then Resume |
 | Restart | — | Restart |
-| Grid | — | Grid (hidden in compact landscape) |
+| Registration grid | — | Grid (hidden in short landscape) |
 | Music | — | Music On / Off |
 
-## Music and persistence
+Music starts after a user gesture, defaults on and pauses with gameplay or tab hiding. Toggle it off/on in the header; volume is the preserved fixed master level `0.28` (there is no volume slider). Restart and orientation changes keep the same source/context instead of layering tracks. Browser/device output volume is controlled by your system. Physical-speaker loudness has not been verified.
 
-The existing track **Neon Stack** and entire `src/music.js` are preserved byte-for-byte from baseline `842622f6200e3a55847a7cda5699332b86190653`. It uses locally synthesized square/triangle/noise audio, with no bundled third-party recording/sample. The source's originality statement is not independent musicological verification or a license grant.
+## Records and the renamed URL
 
-Music defaults on but starts only after interaction. Pause/visibility handling suspends the existing audio context; resume continues its source. Restart, game over and resize do not recreate the track. Legacy keys `tetris-high-score` and `tetris-music` remain for compatibility. A move to another origin would require separate migration; localStorage does not follow automatically.
+The existing repository was renamed, not replaced. The compatibility keys `tetris-high-score` and `tetris-music` intentionally remain. Storage belongs to the `nateofspades.github.io` origin, not its repository path; synthetic seeded tests cover old-path/new-path retention. This is not proof that a particular person's browser data migrated. Different browsers, private sessions, cleared storage or a different origin do not share records.
 
-## Local setup and checks
+## Development and testing
 
-Requires compatible Node.js (22+ recommended).
+Node.js 22+ recommended:
 
 ```sh
 npm ci
 npx playwright install chromium
 npm run dev       # http://127.0.0.1:4175
-npm test          # full Vitest suite
+npm test          # Vitest, one worker
 npm run build
-npm run test:e2e  # Chromium, one worker; starts its own local Vite server
+npm run test:e2e  # Chromium, one worker; starts/stops its own local server
 npm run test:all
 ```
 
-In the shared audit environment, wrap all test/build/browser/server commands with `flock /root/arcade-migration-audit/preparation/test.lock`; do not leave a separate server running. Dependencies in that environment are symlinked to the original checkout and are not committed.
+The full browser suite covers 1920×1080, 1366×768, 768×1024, 390×844, 320×568 and 844×390, plus 568×320. It checks full-board/control geometry, all twenty rows, actual bottom-row locking/rendering/clearing, keyboard and touch actions, start/pause/resume/restart/game over, scoring, legacy persistence and audio continuity. A separate true mobile-emulation context checks touch play; Web Audio tests measure an actual running context clock and nonzero analyser signal. Emulation is not physical-device testing. No victory screen exists in this endless game.
 
-The browser suite exercises 1920×1080, 1366×768, 768×1024, 390×844, 320×568, 844×390 and the additional short-landscape 568×320 case. It checks no-scroll/full-board geometry, actual bottom-row lock/render/clear, whole-toggle hit targets, keyboard/touch play, orientation, restart, music source continuity and legacy records. The current desktop and small-mobile gameplay captures above are committed with this private branch. Additional viewport screenshots and raw execution logs remain in the external preparation directory. The older tracked screenshot is historical, not evidence of the current design.
+CI executes unit tests, build and the entire browser suite before deploying the same main commit through GitHub Actions Pages. Relative Vite assets support the exact case-sensitive project path. A current active desktop screenshot is above; [mobile gameplay](assets/screenshots/gameplay-mobile.png) is also captured from the running browser, not a mockup.
 
-## Release limitations
+## Technology, provenance and licensing
 
-No general repository license was identified; ownership/authorization still needs documentation. Exact seven-piece family, board proportions, line clearing, rotations/kicks, ghost/hold/next and their overall combination remain recognizable and require qualified comparative review. A changed title, palette or framing is not legal clearance. No trademark search, public deployment, repository rename, push, merge or public URL validation is included. See [migration gates](docs/private-migration.md).
+Vanilla JavaScript ES modules, Canvas 2D, responsive CSS and Web Audio; Vite, Vitest and Playwright tooling. No downloaded commercial sprites, fonts, samples or recordings are shipped. The original soundtrack retains its historical track name, **Neon Stack**; its note arrays and synthesis code are unchanged, not evidence of musicological clearance.
 
-## Technology and third-party credits
-
-Vanilla JavaScript ES modules, Canvas 2D, CSS responsive layout and Web Audio; Vite build tooling, Vitest unit testing and Playwright browser testing. The installed Vite and Vitest tooling is MIT-licensed; Playwright Test uses Apache-2.0. Their actual installed copyright, license and NOTICE texts are retained in [third-party tooling notices](docs/THIRD_PARTY_NOTICES.md). Keep applicable notices with redistributed generated helper code/builds. These tooling licenses do not establish ownership or permission for unrelated game-specific inputs. No downloaded commercial game sprites, fonts or sampled soundtrack were introduced by this preparation.
+See [IP audit](docs/IP_AUDIT.md) for the file-level inventory, source history, comparison, risks and limitations, and [third-party notices](docs/THIRD_PARTY_NOTICES.md) for actual tooling license texts (MIT / Apache-2.0 and bundled notices). There is **no general game-source LICENSE grant**: public availability does not grant unrestricted reuse. The owner's publication authorization is not a third-party license or legal clearance. The recognizable falling-block rules/overall combination still warrant qualified IP counsel. This project is not affiliated with or endorsed by the commercial reference discussed in the audit.
